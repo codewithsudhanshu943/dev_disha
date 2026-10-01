@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import HeroCurtain from "./HeroCurtain";
+import emailjs from "@emailjs/browser";
 
 /* ============================================================
    CONFIG — edit your wedding details here
@@ -9,18 +11,20 @@ const CFG = {
   date: "2026-11-20T18:00:00+05:30",
   dateText: "20 · 11 · 2026",
   quote: "Two souls, one journey — bound by love, blessed by tradition.",
-  brideInfo: "Daughter of Mr. & Mrs. Sharma. A dreamer with a heart full of poetry.",
+  brideInfo: "Daughter of Late Mr. Hanuman & Mrs. Usha Devi. A dreamer with a heart full of poetry.",
   groomInfo: "Son of Mr. Arvind Kumar & Mrs. Pusplata. A gentle soul with a love for music.",
-  bridePhoto: "/bride.jpg",     /* ← public/bride.jpg */
-  groomPhoto: "/groom.jpg",     /* ← public/groom.jpg */
+  bridePhoto: "/disha.jpeg",
+  groomPhoto: "/dev.jpeg",
   venue: "Sharda Lawn",
   address: "Basaratpur Near Shahpur Thana , Gorakhpur, 273004",
-  venueImg: "",
+  venueEmbed: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3586.2324066431643!2d83.38037152242676!3d26.790852877474805!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399145322aa631a3%3A0x82be5de0a0fa7c6f!2sSHARDA%20LAWN!5e0!3m2!1sen!2sin!4v1790833140528!5m2!1sen!2sin",
+  venueMapLink: "https://www.google.com/maps/search/?api=1&query=SHARDA+LAWN+Basaratpur+Near+Shahpur+Thana+Gorakhpur+273004",
+  venueImg: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQrN1D-P2W1BxwHWkvUACqGVZ6nfahoImBWQcy-O0Dtkod6Vf2-qzahRtYV&s=10",
   events: [
-    { n: "Haldi",     i: "🌼", d: "19 Nov 2026", t: "10:00 AM", v: "From Home",           x: "Turmeric, laughter and golden blessings." },
-    { n: "Mehendi",   i: "🌿", d: "19 Nov 2026", t: "06:00 PM", v: "From Home",           x: "Mehandi, Intricate henna, folk songs and sweet stories." },
-    { n: "Baraat",    i: "🐎", d: "20 Nov 2026", t: "6:00 PM",  v: "Sharda Lawn Mandap",  x: "Pheras around the sacred fire, under the stars." },
-    { n: "Wedding",   i: "💍", d: "20 Nov 2026", t: "10:00 PM", v: "Sharda Lawn Mandap",  x: "Pheras around the mandap, with blessings." },
+    { n: "Haldi",   i: "🌼", d: "19 Nov 2026", t: "10:00 AM", v: "From Home",          x: "Turmeric, laughter and golden blessings." },
+    { n: "Mehendi", i: "🌿", d: "19 Nov 2026", t: "06:00 PM", v: "From Home",          x: "Mehandi, Intricate henna, folk songs and sweet stories." },
+    { n: "Baraat",  i: "🐎", d: "20 Nov 2026", t: "6:00 PM",  v: "Sharda Lawn Mandap", x: "Pheras around the sacred fire, under the stars." },
+    { n: "Wedding", i: "💍", d: "20 Nov 2026", t: "10:00 PM", v: "Sharda Lawn Mandap", x: "Pheras around the mandap, with blessings." },
   ],
   story: [
     ["First Meeting",      "14 Feb 2026",   "A rainy café, a shared umbrella, a smile that stayed."],
@@ -31,8 +35,8 @@ const CFG = {
     ["Forever Begins",     "20 Nov 2026",   "Seven pheras, seven promises, one lifetime."],
   ],
   brideFam: [
-    "Late Mr. Rajesh Sharma",
-    "Mrs. Sunita Sharma",
+    "Late Mr. Hanuman",
+    "Mrs. Usha Devi",
     "Grandparents: Late Sh. Mohan Lal Sharma & Smt. Kamla Devi",
   ],
   groomFam: [
@@ -48,6 +52,18 @@ const CFG = {
     ["Nani", "May your life be filled with endless love and joy."],
     ["Nana", "Two beautiful souls, one beautiful journey. Congratulations!"],
   ],
+  contacts: [
+    { name: "Sudhanshu", role: "Coordinator", phone: "+91 92660 64405", tel: "+919266064405" },
+    { name: "Pintu",     role: "Coordinator", phone: "+91 82871 68095", tel: "+918287168095" },
+    { name: "Bindu",     role: "Coordinator", phone: "+91 94158 23829", tel: "+919415823829" },
+  ],
+};
+
+const EMAILJS = {
+  serviceId:  "service_pv9w5qa",
+  templateId: "template_6mf4qsq",
+  publicKey:  "_s3fyHRoH0jE0WsTo",
+  toName:     "Devanshu & Disha",
 };
 
 /* ============================================================
@@ -200,7 +216,7 @@ function useCountdown(targetISO) {
 }
 
 /* ============================================================
-   LOCAL MUSIC HOOK — plays /public/kudmayi.mp3
+   LOCAL MUSIC HOOK
    ============================================================ */
 function useMusic(src = "/kudmayi.mp3") {
   const audioRef = useRef(null);
@@ -215,19 +231,10 @@ function useMusic(src = "/kudmayi.mp3") {
     a.load();
     audioRef.current = a;
 
-    const onLoaded = () =>
-      console.log("[music] metadata loaded. duration =", a.duration, "s");
-    const onCanPlay = () => console.log("[music] canplay fired. readyState =", a.readyState);
-    const onError = (e) =>
-      console.error("[music] load error:", e, "src =", a.src);
-
-    a.addEventListener("loadedmetadata", onLoaded);
-    a.addEventListener("canplay", onCanPlay);
+    const onError = (e) => console.error("[music] load error:", e, "src =", a.src);
     a.addEventListener("error", onError);
 
     return () => {
-      a.removeEventListener("loadedmetadata", onLoaded);
-      a.removeEventListener("canplay", onCanPlay);
       a.removeEventListener("error", onError);
       a.pause();
       audioRef.current = null;
@@ -237,25 +244,15 @@ function useMusic(src = "/kudmayi.mp3") {
   const start = useCallback(() => {
     const a = audioRef.current;
     if (!a) return;
-    console.log("[music] start() called. readyState =", a.readyState);
-
     const doPlay = () => {
       a.volume = 0;
       const p = a.play();
-
       if (p && p.then) {
-        p.then(() => {
-          console.log("[music] playing ✅");
-          setOn(true);
-        }).catch((err) => {
-          console.error("[music] play blocked ❌", err.name, "-", err.message);
+        p.then(() => setOn(true)).catch((err) => {
+          console.error("[music] play blocked ❌", err.name);
         });
-      } else {
-        setOn(true);
-      }
-
-      const target = 0.55;
-      const steps = 30;
+      } else setOn(true);
+      const target = 0.55, steps = 30;
       let i = 0;
       const iv = setInterval(() => {
         i++;
@@ -264,16 +261,9 @@ function useMusic(src = "/kudmayi.mp3") {
         if (i >= steps) clearInterval(iv);
       }, 50);
     };
-
-    if (a.readyState >= 3) {
-      doPlay();
-    } else {
-      console.log("[music] waiting for canplay...");
-      const onReady = () => {
-        a.removeEventListener("canplay", onReady);
-        console.log("[music] canplay fired inside start");
-        doPlay();
-      };
+    if (a.readyState >= 3) doPlay();
+    else {
+      const onReady = () => { a.removeEventListener("canplay", onReady); doPlay(); };
       a.addEventListener("canplay", onReady);
       a.load();
     }
@@ -282,12 +272,8 @@ function useMusic(src = "/kudmayi.mp3") {
   const toggle = useCallback(() => {
     const a = audioRef.current;
     if (!a) return;
-    if (a.paused) {
-      a.play().then(() => setOn(true)).catch(() => {});
-    } else {
-      a.pause();
-      setOn(false);
-    }
+    if (a.paused) a.play().then(() => setOn(true)).catch(() => {});
+    else { a.pause(); setOn(false); }
   }, []);
 
   const vis = useCallback(() => {
@@ -303,7 +289,7 @@ function useMusic(src = "/kudmayi.mp3") {
 /* ============================================================
    SCRATCH CARD
    ============================================================ */
-function ScratchCard({ address, mapUrl, venue, onBurst }) {
+function ScratchCard({ address, mapUrl, venue, venueEmbed, onBurst }) {
   const canvasRef = useRef(null);
   const wrapperRef = useRef(null);
   const stateRef = useRef({ down: false, n: 0, done: false, w: 0 });
@@ -404,8 +390,32 @@ function ScratchCard({ address, mapUrl, venue, onBurst }) {
       <div id="lk" inert={revealed ? "" : undefined}>
         <h3>{venue}</h3>
         <a className="ad" href={mapUrl} target="_blank" rel="noopener">{address}</a>
+
+        {venueEmbed && (
+          <div className="map-embed" style={{ margin: "18px auto 22px", maxWidth: 520 }}>
+            <div style={{ position: "relative", width: "100%", paddingTop: "56.25%" }}>
+              <iframe
+                title={`Map to ${venue}`}
+                src={venueEmbed}
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  width: "100%",
+                  height: "100%",
+                  border: 0,
+                  borderRadius: 12,
+                }}
+                allowFullScreen=""
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
+              />
+            </div>
+          </div>
+        )}
+
         <a className="btn" href={mapUrl} target="_blank" rel="noopener">📍 View Location</a>
       </div>
+
       <canvas
         id="scv"
         ref={canvasRef}
@@ -413,6 +423,7 @@ function ScratchCard({ address, mapUrl, venue, onBurst }) {
         aria-hidden="true"
         style={revealed ? { opacity: 0, pointerEvents: "none" } : undefined}
       />
+
       {!revealed && (
         <button id="skip" type="button" onClick={() => setRevealed(true)}>
           or tap to reveal
@@ -644,7 +655,7 @@ function GalleryTile({ i, h }) {
 }
 
 /* ============================================================
-   COUPLE PORTRAIT — handles image OR placeholder
+   COUPLE PORTRAIT
    ============================================================ */
 function Portrait({ name, src }) {
   return src ? (
@@ -667,6 +678,10 @@ export default function App() {
   const [formName, setFormName] = useState("");
   const [formWish, setFormWish] = useState("");
   const [formError, setFormError] = useState("");
+
+  // ✅ NEW states for EmailJS
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
 
   const burstRef = useRef(null);
   const particlesRef = useParticles(burstRef);
@@ -717,25 +732,54 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [galleryOpen]);
 
-  /* ------- wishes submit ------- */
-  const submitWish = (e) => {
+  /* ------- wishes submit — EmailJS wired ✅ ------- */
+  const submitWish = async (e) => {
     e.preventDefault();
     const n = formName.trim();
     const w = formWish.trim();
-    if (!n || !w) { setFormError("Please add your name and a wish."); return; }
+
+    if (!n || !w) {
+      setFormError("Please add your name and a wish.");
+      return;
+    }
+
     setFormError("");
-    const cur = store.get("wishes", []);
-    cur.unshift([n, w]);
-    store.set("wishes", cur);
-    setWishes([[n, w], ...wishes]);
-    setFormName("");
-    setFormWish("");
-    burstRef.current && burstRef.current(10);
+    setSending(true);
+
+    try {
+      await emailjs.send(
+        EMAILJS.serviceId,
+        EMAILJS.templateId,
+        {
+          from_name: n,
+          message: w,
+          to_name: EMAILJS.toName,
+          reply_to: "no-reply@wedding.com",
+        },
+        { publicKey: EMAILJS.publicKey }
+      );
+
+      // Save locally too (for the wishes wall)
+      const cur = store.get("wishes", []);
+      cur.unshift([n, w]);
+      store.set("wishes", cur);
+      setWishes([[n, w], ...wishes]);
+
+      setFormName("");
+      setFormWish("");
+      setSent(true);
+      burstRef.current && burstRef.current(10);
+
+      setTimeout(() => setSent(false), 5000);
+    } catch (err) {
+      console.error("[emailjs] error:", err);
+      setFormError("Could not send your wish. Please try again.");
+    } finally {
+      setSending(false);
+    }
   };
 
-  const mapUrl =
-    "https://www.google.com/maps/search/?api=1&query=" +
-    encodeURIComponent(CFG.venue + ", " + CFG.address);
+  const mapUrl = CFG.venueMapLink;
 
   const cdLabels = ["Days", "Hours", "Minutes", "Seconds"];
 
@@ -799,7 +843,7 @@ export default function App() {
       )}
 
       <main id="app">
-        <Section id="hero">
+        <HeroCurtain>
           <Garland position="top" />
           <Garland position="bottom" />
           <PaisleyBg />
@@ -812,7 +856,7 @@ export default function App() {
           <div className="date rv" style={{ "--d": ".75s" }}>{CFG.dateText}</div>
           <p className="q rv" style={{ "--d": ".9s" }}>“{CFG.quote}”</p>
           <DiyaRow />
-        </Section>
+        </HeroCurtain>
 
         {/* ================= COUPLE ================= */}
         <Section id="couple">
@@ -820,7 +864,6 @@ export default function App() {
           <h2 className="rv">Groom &amp; Bride</h2>
           <div className="div" />
           <div className="cp">
-            {/* Groom (first) */}
             <div className="rv">
               <div className="arch">
                 <Portrait name={CFG.groom} src={CFG.groomPhoto} />
@@ -828,7 +871,6 @@ export default function App() {
               <h3 className="script">{CFG.groom}</h3>
               <p>{CFG.groomInfo}</p>
             </div>
-            {/* Bride (second) */}
             <div className="rv" style={{ "--d": ".3s" }}>
               <div className="arch">
                 <Portrait name={CFG.bride} src={CFG.bridePhoto} />
@@ -909,25 +951,52 @@ export default function App() {
             <ScratchCard
               venue={CFG.venue}
               address={CFG.address}
+              venueEmbed={CFG.venueEmbed}
               mapUrl={mapUrl}
               onBurst={(n) => burstRef.current && burstRef.current(n)}
             />
           </div>
         </Section>
 
+        {/* ================= WISHES — EmailJS Wired ================= */}
         <Section id="wishes">
           <p className="eyebrow rv">Blessings</p>
           <h2 className="rv">Wishes for the Couple</h2>
           <form id="wf" className="rv" onSubmit={submitWish} noValidate style={{ padding: "30px 24px" }}>
             <label htmlFor="wn">Your Name</label>
-            <input id="wn" value={formName} onChange={(e) => setFormName(e.target.value)} required />
+            <input
+              id="wn"
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+              required
+              disabled={sending}
+            />
+
             <label htmlFor="ww">Your Wedding Wish</label>
-            <textarea id="ww" rows="2" value={formWish} onChange={(e) => setFormWish(e.target.value)} required />
+            <textarea
+              id="ww"
+              rows="2"
+              value={formWish}
+              onChange={(e) => setFormWish(e.target.value)}
+              required
+              disabled={sending}
+            />
+
             <div className="er" role="alert">{formError}</div>
+
+            {sent && (
+              <div className="ok-msg" role="status">
+                ✅ Thank you! Your blessings have been sent.
+              </div>
+            )}
+
             <div style={{ textAlign: "center" }}>
-              <button className="btn" type="submit">Send Blessings</button>
+              <button className="btn" type="submit" disabled={sending}>
+                {sending ? "Sending…" : "Send Blessings"}
+              </button>
             </div>
           </form>
+
           <div className="wl">
             {wishes.map((w, i) => (
               <div key={i} className="wc rv in">
@@ -938,6 +1007,7 @@ export default function App() {
           </div>
         </Section>
 
+        {/* ================= END ================= */}
         <section id="end">
           <div className="fr" />
           <Mandala style={{ left: "50%", top: "50%", margin: "-260px 0 0 -260px" }} />
@@ -949,6 +1019,24 @@ export default function App() {
             <div className="div" />
             <p className="q rv" style={{ "--d": ".5s" }}>Forever Begins Here ❤️</p>
             <div className="date rv" style={{ "--d": ".7s" }}>{CFG.dateText}</div>
+
+            <div className="contacts rv" style={{ "--d": ".9s" }}>
+              <p className="contacts-title">For any queries</p>
+              <div className="contacts-list">
+                {CFG.contacts.map((c, i) => (
+                  <a
+                    key={i}
+                    className="contact-card"
+                    href={`tel:${c.tel}`}
+                    aria-label={`Call ${c.name}`}
+                  >
+                    <span className="contact-role">{c.role}</span>
+                    <span className="contact-name">{c.name}</span>
+                    <span className="contact-phone">📞 {c.phone}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
       </main>

@@ -480,3 +480,132 @@ fieldset{border:0;padding:0;margin:0}
     letter-spacing: .14em;
   }
 }
+
+/* ==========================================================================
+   PASTE AT THE VERY END of your CSS (after the mobile @media block).
+   Adds: palki curtains in HERO + Taj Mahal window (pointed arch) frames
+   for EVENTS and COUPLE. Written against your current CSS.
+   ========================================================================== */
+:root{--tj:polygon(0 68px,12px 56px,27.0% 56.0px,27.2% 50.1px,28.1% 45.2px,29.6% 41.1px,31.6% 37.5px,34.0% 34.2px,36.6% 31.0px,39.3% 27.6px,42.0% 23.9px,44.6% 19.4px,46.8% 14.1px,48.7% 7.7px,50.0% 0.0px,51.3% 7.7px,53.2% 14.1px,55.4% 19.4px,58.0% 23.9px,60.7% 27.6px,63.4% 31.0px,66.0% 34.2px,68.4% 37.5px,70.4% 41.1px,71.9% 45.2px,72.8% 50.1px,73.0% 56.0px,calc(100% - 12px) 56px,100% 68px,100% calc(100% - 12px),calc(100% - 12px) 100%,12px 100%,0 calc(100% - 12px))}
+
+/* ---------- HERO: scroll-driven palki curtains ---------- */
+#hero{height:270svh;min-height:0;display:block;padding:0;overflow:clip;background:none;--hp:0}
+.stk{position:sticky;top:0;height:100svh;display:grid;place-items:center;padding:0 22px;overflow:hidden;
+  background:
+    radial-gradient(ellipse at 50% 0%,rgba(255,170,80,.28),transparent 55%),
+    radial-gradient(ellipse at 50% 100%,rgba(255,120,140,.22),transparent 60%),
+    radial-gradient(ellipse at 0% 50%,rgba(201,112,127,.16),transparent 50%),
+    radial-gradient(ellipse at 100% 50%,rgba(185,141,60,.18),transparent 50%)}
+.hc{position:relative;z-index:1;width:100%;text-align:center;opacity:calc(.3 + var(--hp)*.7);transform:scale(calc(.88 + var(--hp)*.12));will-change:transform}
+.cur{position:absolute;top:0;bottom:0;width:50.6%;z-index:3;background:linear-gradient(0deg,#e3c883 0 6px,transparent 6px),repeating-linear-gradient(90deg,rgba(227,200,131,.95) 0 3px,transparent 3px 14px) 0 calc(100% - 10px)/100% 16px no-repeat,radial-gradient(circle,rgba(227,200,131,.35) 1.5px,transparent 2.2px) 0 0/26px 26px,repeating-linear-gradient(90deg,rgba(0,0,0,.22) 0 2px,transparent 2px 20px,rgba(255,200,150,.1) 20px 32px),linear-gradient(180deg,#9a2238,#4c0d1a);box-shadow:0 0 40px rgba(0,0,0,.45);will-change:transform;display:grid;place-items:center;color:#e3c883;font-size:clamp(44px,11vw,96px)}
+.cur:before{content:"❀";opacity:calc(.8 - var(--hp)*1.3)}
+.cl{left:0;transform-origin:0 50%;transform:scaleX(calc(1 - var(--hp)*.84));border-right:3px solid var(--gold2)}
+.cr{right:0;transform-origin:100% 50%;transform:scaleX(calc(1 - var(--hp)*.84));border-left:3px solid var(--gold2)}
+.val{position:absolute;top:0;left:0;right:0;height:46px;z-index:5;background:linear-gradient(180deg,#7a1a2d,#5a1421);border-bottom:3px solid var(--gold2);display:grid;place-items:center;color:#e3c883;letter-spacing:.7em;font-size:13px;pointer-events:none}
+.val:after{content:"";position:absolute;left:0;right:0;top:100%;margin-top:3px;height:14px;background:radial-gradient(circle at 12px 0,#7a1a2d 10px,#e3c883 11px,#e3c883 13px,transparent 14px) 0 0/24px 14px repeat-x}
+.tie{position:absolute;top:56%;z-index:4;width:9%;height:12px;background:linear-gradient(#f3dca2,#b98d3c);border-radius:6px;opacity:min(1,max(0,calc((var(--hp) - .6)*4)));box-shadow:0 2px 6px rgba(0,0,0,.4);pointer-events:none}
+.tie:after{content:"";position:absolute;left:50%;top:10px;width:14px;height:46px;margin-left:-7px;background:linear-gradient(#e3c883,#b98d3c) top/100% 12px no-repeat,repeating-linear-gradient(90deg,#e3c883 0 2px,transparent 2px 4px) bottom/100% 34px no-repeat;border-radius:0 0 7px 7px}
+.tie.a{left:0}.tie.b{right:0}
+.hint{position:absolute;inset:0;z-index:4;display:grid;place-content:center;gap:14px;text-align:center;color:#f3dca2;opacity:calc(1 - var(--hp)*4);pointer-events:none}
+.hint span{font:400 12px var(--sans);letter-spacing:.35em;text-transform:uppercase}
+.hint i{font-style:normal;display:block;font-size:22px;animation:hintbob 2s ease-in-out infinite}
+.hint .dev{font-size:clamp(20px,5vw,30px);color:#f3dca2}
+@keyframes hintbob{50%{transform:translateY(8px)}}
+
+/* ---------- EVENTS: Taj Mahal window frame ---------- */
+.x{isolation:isolate;background:linear-gradient(135deg,#f3dca2,#b98d3c,#f3dca2);clip-path:var(--tj);padding:70px 28px 44px;border:0;border-radius:0;box-shadow:none;backdrop-filter:none;overflow:visible}
+.x:before{inset:3px;z-index:-1;clip-path:var(--tj);background:linear-gradient(180deg,rgba(201,112,127,.14),transparent 60%),var(--bg);border:0;border-radius:0}
+.x:after{content:none} /* old kalash finial removed: the pointed arch tip replaces it */
+@media(max-width:640px){.x{padding:64px 20px 34px}}
+
+/* ---------- COUPLE: Taj Mahal window frame ---------- */
+.arch{padding:3px;background:linear-gradient(135deg,#f3dca2,#b98d3c,#f3dca2);clip-path:var(--tj);border:0;border-radius:0;box-shadow:none;opacity:0;transform:scale(.94);transition:opacity 1.4s,transform 1.4s}
+.in .arch,.arch.in{clip-path:var(--tj);opacity:1;transform:none}
+.arch>div,.arch img{clip-path:var(--tj);border-radius:0;filter:blur(8px);transition:filter 1.6s}
+.arch>div{padding-top:40px}
+.in .arch>div,.in .arch img,.arch.in>div,.arch.in img{filter:none}
+
+@media(prefers-reduced-motion:reduce){#hero{height:auto}.stk{position:relative;min-height:100svh}.cur,.hint,.tie,.val{display:none}.hc{opacity:1;transform:none}.x,.arch{clip-path:var(--tj)}.arch>div,.arch img{filter:none}}
+
+/* Contact cards block */
+.contacts {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.contacts-title {
+  font: 400 12px var(--sans, 'Poppins', sans-serif);
+  letter-spacing: .35em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0 0 16px;
+  opacity: .85;
+}
+
+.contacts-list {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+@media (min-width: 640px) {
+  .contacts-list {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 640px;
+    gap: 10px;
+  }
+}
+
+.contact-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 12px;
+  background: var(--card, rgba(255,250,240,.72));
+  border: 1px solid var(--bd, rgba(185,141,60,.45));
+  border-radius: 14px;
+  text-decoration: none;
+  color: var(--ink, #4a1420);
+  box-shadow: 0 6px 18px rgba(107,21,37,.10);
+  transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+}
+
+.contact-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--gold);
+  box-shadow: 0 10px 26px rgba(107,21,37,.18);
+}
+
+.contact-role {
+  font: 500 10px var(--sans, 'Poppins', sans-serif);
+  letter-spacing: .25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: .9;
+}
+
+.contact-name {
+  font: 600 20px var(--serif, 'Cormorant Garamond', serif);
+  color: var(--mar, #6b1525);
+  line-height: 1.1;
+}
+
+.contact-phone {
+  font: 400 13px var(--sans, 'Poppins', sans-serif);
+  color: var(--mut, #7a5a52);
+  letter-spacing: .03em;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .contact-card {
+    background: rgba(60,14,26,.55);
+    color: var(--ink);
+  }
+  .contact-name {
+    color: var(--gold2, #e3c883);
+  }
+}
