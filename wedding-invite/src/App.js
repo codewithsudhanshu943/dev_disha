@@ -37,7 +37,7 @@ const CFG = {
   brideFam: [
     "Late Mr. Hanuman",
     "Mrs. Usha Devi",
-    "Grandparents: Late Sh. Mohan Lal Sharma & Smt. Kamla Devi",
+    "Grandparents: Bhabhi ko Nahi pta unke dada dadi ka naam 😂🤣",
   ],
   groomFam: [
     "Mr. Arvind Kumar",
@@ -54,8 +54,8 @@ const CFG = {
   ],
   contacts: [
     { name: "Sudhanshu", role: "Coordinator", phone: "+91 92660 64405", tel: "+919266064405" },
-    { name: "Pintu",     role: "Coordinator", phone: "+91 82871 68095", tel: "+918287168095" },
-    { name: "Bindu",     role: "Coordinator", phone: "+91 94158 23829", tel: "+919415823829" },
+    { name: "Vipin",     role: "Coordinator", phone: "+91 82871 68095", tel: "+918287168095" },
+    { name: "Arvind",    role: "Coordinator", phone: "+91 94158 23829", tel: "+919415823829" },
   ],
 };
 
@@ -287,30 +287,65 @@ function useMusic(src = "/kudmayi.mp3") {
 }
 
 /* ============================================================
-   SCRATCH CARD
+   SCRATCH CARD — FIXED
    ============================================================ */
 function ScratchCard({ address, mapUrl, venue, venueEmbed, onBurst }) {
   const canvasRef = useRef(null);
   const wrapperRef = useRef(null);
-  const stateRef = useRef({ down: false, n: 0, done: false, w: 0 });
+  const stateRef = useRef({
+    down: false,
+    n: 0,
+    done: false,
+    w: 0,
+    h: 0,
+    initialized: false,
+    autoTimer: null,
+  });
   const [revealed, setRevealed] = useState(false);
+  const onBurstRef = useRef(onBurst);
+
+  /* ✅ Keep onBurst fresh without re-running the main effect */
+  useEffect(() => {
+    onBurstRef.current = onBurst;
+  }, [onBurst]);
 
   useEffect(() => {
     const cv = canvasRef.current;
     const bx = wrapperRef.current;
     if (!cv || !bx) return;
-    const x = cv.getContext("2d");
-    const dp = Math.min(window.devicePixelRatio || 1, 2);
+
     const s = stateRef.current;
 
+    /* ✅ Prevent double-init (React Strict Mode) */
+    if (s.initialized) {
+      console.log("[scratch] already initialized, skipping");
+      return;
+    }
+    s.initialized = true;
+
+    const x = cv.getContext("2d", { willReadFrequently: true });
+
+    /* -----------------------------------------------------------
+       FOIL — draws golden scratch layer. Only runs ONCE.
+       ----------------------------------------------------------- */
     const foil = () => {
+      /* ✅✅✅ GUARD — most important fix */
+      if (s.done || s.n > 0) {
+        console.log("[scratch] foil skipped — already scratched");
+        return;
+      }
+
       const w = bx.offsetWidth;
       const h = bx.offsetHeight;
+      console.log("[scratch] foil size:", w, h);
+      if (w === 0 || h === 0) return;
+
       s.w = w;
-      cv.width = w * dp;
-      cv.height = h * dp;
-      x.setTransform(dp, 0, 0, dp, 0, 0);
+      s.h = h;
+      cv.width = w;
+      cv.height = h;
       x.globalCompositeOperation = "source-over";
+
       const g = x.createLinearGradient(0, 0, w, h);
       g.addColorStop(0, "#c99a45");
       g.addColorStop(0.35, "#f3dca2");
@@ -318,12 +353,15 @@ function ScratchCard({ address, mapUrl, venue, venueEmbed, onBurst }) {
       g.addColorStop(1, "#e3c883");
       x.fillStyle = g;
       x.fillRect(0, 0, w, h);
+
       for (let i = 0; i < 140; i++) {
         x.fillStyle = `rgba(255,255,255,${Math.random() * 0.35})`;
         x.fillRect(Math.random() * w, Math.random() * h, 1 + Math.random() * 2, 1 + Math.random() * 2);
       }
+
       x.strokeStyle = "rgba(107,21,37,.45)";
       x.strokeRect(10, 10, w - 20, h - 20);
+
       x.fillStyle = "#5a1421";
       x.textAlign = "center";
       x.font = `italic 600 ${Math.min(26, w / 14)}px Cormorant Garamond,Georgia,serif`;
@@ -332,6 +370,9 @@ function ScratchCard({ address, mapUrl, venue, venueEmbed, onBurst }) {
       x.fillText("to reveal your location", w / 2, h / 2 + 20);
     };
 
+    /* -----------------------------------------------------------
+       PCT — % of canvas cleared
+       ----------------------------------------------------------- */
     const pct = () => {
       const d = x.getImageData(0, 0, cv.width, cv.height).data;
       let t = 0, c = 0;
@@ -339,25 +380,56 @@ function ScratchCard({ address, mapUrl, venue, venueEmbed, onBurst }) {
       return t / c;
     };
 
+    /* -----------------------------------------------------------
+       REVEAL
+       ----------------------------------------------------------- */
     const reveal = () => {
       if (s.done) return;
       s.done = true;
       setRevealed(true);
-      onBurst && onBurst(14);
+      onBurstRef.current && onBurstRef.current(14);
     };
 
-    const scratch = (e) => {
+    /* -----------------------------------------------------------
+       SCRATCH — erase circles at pointer position
+       ----------------------------------------------------------- */
+    const scratch = (clientX, clientY) => {
       const r = cv.getBoundingClientRect();
+      const xPos = clientX - r.left;
+      const yPos = clientY - r.top;
       x.globalCompositeOperation = "destination-out";
       x.beginPath();
-      x.arc(e.clientX - r.left, e.clientY - r.top, Math.max(22, s.w / 14), 0, 6.3);
+      x.arc(xPos, yPos, Math.max(22, s.w / 14), 0, 6.3);
       x.fill();
-      if (++s.n % 8 === 0 && pct() > 0.4) reveal();
+      if (++s.n % 6 === 0 && pct() > 0.20) reveal();
     };
 
-    const onDown = (e) => { s.down = true; cv.setPointerCapture(e.pointerId); scratch(e); };
-    const onMove = (e) => { if (s.down) scratch(e); };
-    const onUp = () => { s.down = false; if (pct() > 0.4) reveal(); };
+    /* -----------------------------------------------------------
+       POINTER EVENTS
+       ----------------------------------------------------------- */
+    const onDown = (e) => {
+      e.preventDefault();
+      s.down = true;
+      try { cv.setPointerCapture(e.pointerId); } catch {}
+      scratch(e.clientX, e.clientY);
+
+      /* ✅ Auto-reveal after 1.5s of scratching */
+      if (!s.done) {
+        clearTimeout(s.autoTimer);
+        s.autoTimer = setTimeout(() => {
+          if (!s.done && s.n > 3) reveal();
+        }, 1500);
+      }
+    };
+    const onMove = (e) => {
+      if (!s.down) return;
+      e.preventDefault();
+      scratch(e.clientX, e.clientY);
+    };
+    const onUp = () => {
+      s.down = false;
+      if (pct() > 0.20) reveal();
+    };
     const onCancel = () => { s.down = false; };
 
     cv.addEventListener("pointerdown", onDown);
@@ -365,29 +437,42 @@ function ScratchCard({ address, mapUrl, venue, venueEmbed, onBurst }) {
     cv.addEventListener("pointerup", onUp);
     cv.addEventListener("pointercancel", onCancel);
 
-    foil();
+    /* -----------------------------------------------------------
+       INITIAL FOIL — one shot, with guard
+       ----------------------------------------------------------- */
+    const initT = setTimeout(() => {
+      if (!s.done && s.n === 0) foil();
+    }, 100);
 
+    /* -----------------------------------------------------------
+       RESIZE — only if not scratched
+       ----------------------------------------------------------- */
     let rt;
     const onResize = () => {
       clearTimeout(rt);
-      rt = setTimeout(() => { if (!s.done && !s.n) foil(); }, 200);
+      rt = setTimeout(() => {
+        if (!s.done && s.n === 0) foil();
+      }, 200);
     };
     window.addEventListener("resize", onResize);
 
-    if (document.fonts) document.fonts.ready.then(() => { if (!s.done && !s.n) foil(); });
+    /* ❌ REMOVED: document.fonts.ready — it re-triggers foil and wipes scratch */
 
     return () => {
+      clearTimeout(initT);
+      clearTimeout(s.autoTimer);
+      clearTimeout(rt);
       cv.removeEventListener("pointerdown", onDown);
       cv.removeEventListener("pointermove", onMove);
       cv.removeEventListener("pointerup", onUp);
       cv.removeEventListener("pointercancel", onCancel);
       window.removeEventListener("resize", onResize);
     };
-  }, [onBurst]);
+  }, []); /* ✅ Empty deps — runs once */
 
   return (
-    <div className="bd sc" ref={wrapperRef}>
-      <div id="lk" inert={revealed ? "" : undefined}>
+    <div className={`bd sc ${revealed ? "revealed" : ""}`} ref={wrapperRef}>
+      <div id="lk" inert={!revealed ? "" : undefined}>
         <h3>{venue}</h3>
         <a className="ad" href={mapUrl} target="_blank" rel="noopener">{address}</a>
 
@@ -420,8 +505,8 @@ function ScratchCard({ address, mapUrl, venue, venueEmbed, onBurst }) {
         id="scv"
         ref={canvasRef}
         className={revealed ? "gone" : ""}
+        style={revealed ? { display: "none" } : undefined}
         aria-hidden="true"
-        style={revealed ? { opacity: 0, pointerEvents: "none" } : undefined}
       />
 
       {!revealed && (
@@ -672,6 +757,7 @@ function Portrait({ name, src }) {
    ============================================================ */
 export default function App() {
   const [coverOpen, setCoverOpen] = useState(false);
+  const [heroReady, setHeroReady] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [wishes, setWishes] = useState(() => [...store.get("wishes", []), ...CFG.wishes]);
@@ -679,7 +765,6 @@ export default function App() {
   const [formWish, setFormWish] = useState("");
   const [formError, setFormError] = useState("");
 
-  // ✅ NEW states for EmailJS
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -696,6 +781,8 @@ export default function App() {
     document.body.classList.remove("lock");
     window.scrollTo(0, 0);
     try { shehnai.start(); } catch (e) { console.warn("[music] start err:", e); }
+
+    setTimeout(() => setHeroReady(true), 1600);
   };
 
   /* ------- lock body initially ------- */
@@ -759,7 +846,6 @@ export default function App() {
         { publicKey: EMAILJS.publicKey }
       );
 
-      // Save locally too (for the wishes wall)
       const cur = store.get("wishes", []);
       cur.unshift([n, w]);
       store.set("wishes", cur);
@@ -780,7 +866,6 @@ export default function App() {
   };
 
   const mapUrl = CFG.venueMapLink;
-
   const cdLabels = ["Days", "Hours", "Minutes", "Seconds"];
 
   return (
@@ -843,18 +928,40 @@ export default function App() {
       )}
 
       <main id="app">
-        <HeroCurtain>
+        <HeroCurtain autoOpen={coverOpen} delay={900}>
           <Garland position="top" />
           <Garland position="bottom" />
           <PaisleyBg />
           <Mandala style={{ left: "50%", top: "50%", margin: "-260px 0 0 -260px" }} />
-          <p className="dev rv" style={{ fontSize: 20 }}>॥ श्री गणेशाय नमः ॥</p>
-          <p className="eyebrow rv" style={{ "--d": ".15s" }}>Together with the blessings of our families</p>
-          <div className="hero-n rv" style={{ "--d": ".3s" }}>{CFG.groom}</div>
-          <div className="amp rv" style={{ "--d": ".6s" }}>&amp;</div>
-          <div className="hero-n rv" style={{ "--d": ".6s" }}>{CFG.bride}</div>
-          <div className="date rv" style={{ "--d": ".75s" }}>{CFG.dateText}</div>
-          <p className="q rv" style={{ "--d": ".9s" }}>“{CFG.quote}”</p>
+
+          <p className={`dev ${heroReady ? "in" : ""}`} style={{ fontSize: 20 }}>
+            Your presence will make our day truly special ❤️
+          </p>
+
+          <p className={`eyebrow ${heroReady ? "in" : ""}`}>
+            Together with the blessings of our families
+          </p>
+
+          <div className={`hero-n ${heroReady ? "in" : ""}`}>
+            {CFG.groom}
+          </div>
+
+          <div className={`amp ${heroReady ? "in" : ""}`}>
+            &amp;
+          </div>
+
+          <div className={`hero-n ${heroReady ? "in" : ""}`}>
+            {CFG.bride}
+          </div>
+
+          <div className={`date ${heroReady ? "in" : ""}`}>
+            {CFG.dateText}
+          </div>
+
+          <p className={`q ${heroReady ? "in" : ""}`}>
+            “{CFG.quote}”
+          </p>
+
           <DiyaRow />
         </HeroCurtain>
 
@@ -958,7 +1065,7 @@ export default function App() {
           </div>
         </Section>
 
-        {/* ================= WISHES — EmailJS Wired ================= */}
+        {/* ================= WISHES ================= */}
         <Section id="wishes">
           <p className="eyebrow rv">Blessings</p>
           <h2 className="rv">Wishes for the Couple</h2>
@@ -1013,9 +1120,14 @@ export default function App() {
           <Mandala style={{ left: "50%", top: "50%", margin: "-260px 0 0 -260px" }} />
           <div className="w">
             <div className="dev rv" style={{ fontSize: 20 }}>॥ शुभ विवाह ॥</div>
-            <div className="hero-n rv" style={{ "--d": ".2s", fontSize: "clamp(44px,12vw,96px)" }}>
-              {CFG.groom} &amp; {CFG.bride}
-            </div>
+           <div 
+            className="hero-n rv groom-bride-class" 
+            style={{ "--d": ".2s", fontSize: "clamp(44px,12vw,96px)" }}
+          >
+            <span className="gb-groom">{CFG.groom}</span>
+            <span className="gb-amp">&amp;</span>
+            <span className="gb-bride">{CFG.bride}</span>
+          </div>
             <div className="div" />
             <p className="q rv" style={{ "--d": ".5s" }}>Forever Begins Here ❤️</p>
             <div className="date rv" style={{ "--d": ".7s" }}>{CFG.dateText}</div>
