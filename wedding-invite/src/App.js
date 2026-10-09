@@ -23,8 +23,8 @@ const CFG = {
   events: [
     { n: "Haldi",   i: "🌼", d: "19 Nov 2026", t: "10:00 AM", v: "From Home",          x: "Turmeric, laughter and golden blessings." },
     { n: "Mehendi", i: "🌿", d: "19 Nov 2026", t: "06:00 PM", v: "From Home",          x: "Mehandi, Intricate henna, folk songs and sweet stories." },
-    { n: "Baraat",  i: "🐎", d: "20 Nov 2026", t: "6:00 PM",  v: "Sharda Lawn Mandap", x: "Pheras around the sacred fire, under the stars." },
-    { n: "Wedding", i: "💍", d: "20 Nov 2026", t: "10:00 PM", v: "Sharda Lawn Mandap", x: "Pheras around the mandap, with blessings." },
+    { n: "Baraat",  i: "🐎", d: "20 Nov 2026", t: "6:00 PM",  v: "Rapti Nagar Shahpur Thana", x: "Pheras around the sacred fire, under the stars." },
+    { n: "Wedding", i: "💍", d: "20 Nov 2026", t: "10:00 PM", v: "Sharda Lawn", x: "Pheras around the mandap, with blessings." },
   ],
   story: [
     ["First Meeting",      "14 Feb 2026",   "A rainy café, a shared umbrella, a smile that stayed."],
@@ -37,7 +37,7 @@ const CFG = {
   brideFam: [
     "Late Mr. Hanuman",
     "Mrs. Usha Devi",
-    "Grandparents: Bhabhi ko Nahi pta unke dada dadi ka naam 😂🤣",
+    "Grandparents: Late Ramasukhi & Smt. Shyamapati ",
   ],
   groomFam: [
     "Mr. Arvind Kumar",
