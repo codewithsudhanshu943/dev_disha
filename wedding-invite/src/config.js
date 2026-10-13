@@ -1,5 +1,5 @@
 export const CFG = {
-  bride: "Disha",
+  bride: "Laxmi",
   groom: "Devanshu",
   date: "2026-11-20T18:00:00+05:30",
   dateText: "20 · 11 · 2026",

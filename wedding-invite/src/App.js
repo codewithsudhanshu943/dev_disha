@@ -6,7 +6,7 @@ import emailjs from "@emailjs/browser";
    CONFIG — edit your wedding details here
    ============================================================ */
 const CFG = {
-  bride: "Disha",
+  bride: "Laxmi",
   groom: "Devanshu",
   date: "2026-11-20T18:00:00+05:30",
   dateText: "20 · 11 · 2026",
@@ -63,7 +63,7 @@ const EMAILJS = {
   serviceId:  "service_pv9w5qa",
   templateId: "template_6mf4qsq",
   publicKey:  "_s3fyHRoH0jE0WsTo",
-  toName:     "Devanshu & Disha",
+  toName:     "Devanshu & Laxmi",
 };
 
 /* ============================================================
