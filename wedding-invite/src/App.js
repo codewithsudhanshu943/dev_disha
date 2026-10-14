@@ -218,7 +218,7 @@ function useCountdown(targetISO) {
 /* ============================================================
    LOCAL MUSIC HOOK
    ============================================================ */
-function useMusic(src = "/kudmayi.mp3") {
+function useMusic(src = "/AAJ_SE_TERI_-_Padman____Karaoke_with_Lyrics____AlgoRhythm_Studio(256k).mp3") {
   const audioRef = useRef(null);
   const [on, setOn] = useState(false);
 
@@ -770,7 +770,7 @@ export default function App() {
 
   const burstRef = useRef(null);
   const particlesRef = useParticles(burstRef);
-  const shehnai = useMusic("/kudmayi.mp3");
+  const shehnai = useMusic("/AAJ_SE_TERI_-_Padman____Karaoke_with_Lyrics____AlgoRhythm_Studio(256k).mp3");
   const countdown = useCountdown(CFG.date);
 
   useReveal();
